@@ -27,18 +27,20 @@ def time_measure(method):
 @time_measure
 def odd_even_method(video_path, **kwargs):
     resulting_sequence = []
-    skip_param = 5
+    skip_param = 10
     video_file = cv2.VideoCapture(video_path)
     video_lenght = video_file.get(cv2.CAP_PROP_FRAME_COUNT)
+    previous_coords = 150
     while video_file.isOpened():
         current_frame_id = video_file.get(cv2.CAP_PROP_POS_FRAMES)
         if current_frame_id + skip_param < video_lenght:
             video_file.set(cv2.CAP_PROP_POS_FRAMES, current_frame_id + skip_param)
-            print(current_frame_id + skip_param)
+            print(previous_coords)
             ret, frame = video_file.read()
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             frame = cv2.equalizeHist(frame)
-            random_bit = (frame > 250).sum() % 2
+            random_bit = frame[previous_coords, previous_coords] % 2
+            previous_coords = frame[previous_coords, previous_coords]
             resulting_sequence.append(random_bit)
         else:
             break
@@ -54,6 +56,7 @@ eligible_battery: dict = check_eligibility_all_battery(np.array(result_sequence)
 # for item in results:
 #     f.write(str(item))
 # f.close()
+print("seq. length: ", len(result_sequence))
 results = run_all_battery(np.array(result_sequence), eligible_battery, False)
 for result, elapsed_time in results:
         if result.passed:
